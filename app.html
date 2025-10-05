@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI MineSafe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    header {
+      background-color: #222;
+      color: #fff;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    header img {
+      height: 35px;
+      margin-right: 10px;
+    }
+
+    .container {
+      padding: 15px;
+    }
+
+    h2 {
+      color: #ff9800;
+      margin-top: 20px;
+    }
+
+    .checklist, .video-section, .report-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 15px;
+    }
+
+    .checklist ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      margin-bottom: 10px;
+    }
+
+    .video-card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .video-card h3 {
+      margin: 8px 0 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #ff9800;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background-color: #e68900;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      h2 { font-size: 18px; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="assets/logo.png" alt="MineSafe Logo">
+    <h1>AI MineSafe</h1>
+  </header>
+
+  <div class="container">
+    <section class="checklist">
+      <h2>Daily Safety Checklist</h2>
+      <ul>
+        <li><input type="checkbox"> Wear helmet and PPE kit</li>
+        <li><input type="checkbox"> Inspect tools and equipment</li>
+        <li><input type="checkbox"> Check ventilation systems</li>
+        <li><input type="checkbox"> Ensure emergency exits are clear</li>
+      </ul>
+    </section>
+
+    <section class="video-section">
+      <h2>Safety Video of the Day</h2>
+      <div class="video-card">
+        <img src="assets/video1.jpg" alt="Safety Video">
+        <h3>Learn from past mine incidents</h3>
+      </div>
+    </section>
+
+    <section class="report-section">
+      <h2>Hazard Reporting</h2>
+      <label>Capture Photo:</label>
+      <input type="file" accept="image/*" capture="environment" id="photoInput">
+      <img id="photoPreview" style="width:100%;margin-top:10px;border-radius:10px;display:none;" />
+
+      <label style="margin-top:15px;display:block;">Record Voice Description:</label>
+      <button id="recordBtn">🎙️ Start Recording</button>
+      <audio id="audioPlayback" controls style="display:none;"></audio>
+
+      <label style="margin-top:15px;display:block;">Description:</label>
+      <textarea id="description" rows="3" placeholder="Describe the hazard..."></textarea>
+      <button style="margin-top:10px;">Submit Report</button>
+    </section>
+  </div>
+
+  <script>
+    // Photo Capture Preview
+    const photoInput = document.getElementById('photoInput');
+    const photoPreview = document.getElementById('photoPreview');
+    photoInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          photoPreview.src = e.target.result;
+          photoPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Voice Recording (Local Save & Playback)
+    let mediaRecorder;
+    let audioChunks = [];
+    const recordBtn = document.getElementById('recordBtn');
+    const audioPlayback = document.getElementById('audioPlayback');
+
+    recordBtn.addEventListener('click', async () => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.start();
+          recordBtn.textContent = '⏹️ Stop Recording';
+          audioChunks = [];
+
+          mediaRecorder.addEventListener('dataavailable', e => {
+            audioChunks.push(e.data);
+          });
+
+          mediaRecorder.addEventListener('stop', () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioPlayback.src = audioUrl;
+            audioPlayback.style.display = 'block';
+          });
+        } catch (err) {
+          alert('Microphone access denied or not supported.');
+        }
+      } else {
+        mediaRecorder.stop();
+        recordBtn.textContent = '🎙️ Start Recording';
+      }
+    });
+  </script>
+</body>
+</html>
